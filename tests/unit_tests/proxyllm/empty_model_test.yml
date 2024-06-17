@@ -1,0 +1,25 @@
+llm_proxy:
+  name: LLM proxy API
+  version: demo 1.0
+  description: An API that act as a proxy to multiple language models
+
+proxy_configuration:
+  route_type: cost
+
+optional_configuration:
+  timeout: 10 # Timeout for request to models
+  force_timeout: true # WARNING: This can cause additonal costs!
+
+provider_settings:
+  - provider: OpenAI
+    api_key_var: OPENAI_API_KEY # .env name for api key
+    max_output_tokens: 256
+    temperature: 0.1
+    models: # input names of models you want to you (see below for all models provided)
+
+  - provider: Mistral
+    api_key_var: MISTRAL_API_KEY
+    max_output_tokens: 256
+    temperature: 0.1
+    models:
+      - open-mixtral-8x7b

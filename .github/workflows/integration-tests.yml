@@ -1,0 +1,53 @@
+name: Integration Tests
+
+on: push
+
+jobs:
+  run-integration-tests:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+          cache: "poetry"
+
+      - name: Setup poetry
+        uses: snok/install-poetry@v1
+
+      - name: Install dependencies
+        run: poetry lock --no-update && poetry install
+
+      - name: Create .env file
+        uses: SpicyPizza/create-envfile@v1.3
+        with:
+          envkey_DEBUG: false
+          envkey_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          envkey_COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+          envkey_HUGGING_FACE_API_KEY: ${{ secrets.HUGGING_FACE_API_KEY }}
+          envkey_MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+          envkey_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          #directory: <directory_name> # optional
+          file_name: .env # optional (default: .env)
+          fail_on_empty: false # optional (default: false)
+
+      - id: auth
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ secrets.GOOGLE_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+
+      - name: Run integration tests
+        run: poetry run python3 test.py
